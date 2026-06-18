@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股內部人交易監測系統 | Insider Track</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+TC:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --gold-primary: #c5a059;
+            --gold-secondary: #8e7340;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Noto Sans TC', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        /* 高級感標題區 */
+        .header-section {
+            background: radial-gradient(circle at center, #2c2c2c 0%, #121212 100%);
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--gold-secondary);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-primary);
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            color: var(--gold-secondary);
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        /* 表格容器卡片 */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .card-header {
+            background-color: rgba(197, 160, 89, 0.05);
+            border-bottom: 1px solid var(--gold-secondary);
+            color: var(--gold-primary);
+            font-weight: bold;
+            padding: 1.2rem;
+        }
+
+        /* 表格樣式美化 */
+        .table {
+            color: var(--text-light);
+            border-color: #333;
+        }
+
+        .table thead th {
+            background-color: #1a1a1a;
+            color: var(--gold-primary);
+            border-bottom: 2px solid var(--gold-secondary);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 15px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #2a2a2a;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(197, 160, 89, 0.08);
+            transition: 0.4s ease;
+        }
+
+        /* 關鍵字樣式 */
+        .ticker-badge {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+            color: #000;
+            padding: 4px 10px;
+            font-weight: 700;
+            border-radius: 2px;
+            font-family: sans-serif;
+        }
+
+        .value-text {
+            color: var(--gold-primary);
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+        }
+
+        footer {
+            padding: 3rem 0;
+            color: #666;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section text-center">
+        <h1>Insider Track</h1>
+        <p class="subtitle mt-2">The Elite Intelligence for Global Trading</p>
+    </div>
+
+    <div class="container mb-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>LATEST INSIDER TRANSACTIONS</span>
+                <small style="color: #666;">LIVE DATA FEED</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    {{ table | safe }}
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center">
+            <p>© 2026 High-End Financial Analytics | Confidential Data Intelligence</p>
+        </footer>
+    </div>
+
+    <script>
+        // 自動套用高級樣式
+        document.querySelectorAll('tr').forEach((row, index) => {
+            if(index === 0) return; // 跳過標題列
+            
+            const cells = row.querySelectorAll('td');
+            
+            // Ticker 欄位美化 (假設在第 4 欄，視你資料庫欄位而定)
+            if (cells[3]) {
+                const ticker = cells[3].innerText;
+                cells[3].innerHTML = `<span class="ticker-badge">${ticker}</span>`;
+            }
+
+            // 金額欄位美化
+            cells.forEach(td => {
+                if (td.innerText.includes('$')) {
+                    td.classList.add('value-text');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+name: Daily Insider Crawler
+
+on:
+  schedule:
+    # 每天台灣時間清晨 05:00 自動執行 (UTC 時間為前一天 21:00)
+    - cron: '0 21 * * *'
+  workflow_dispatch: # 讓你可以手動在 GitHub 網頁上點擊按鈕觸發執行
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas playwright sqlalchemy psycopg2-binary requests python-dotenv
+
+    - name: Install Playwright Browsers
+      run: |
+        npx playwright install chromium --with-deps
+
+    - name: Run Crawler Script
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      run: |
+        python app/crawler/insider_spider.py

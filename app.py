@@ -24,33 +24,44 @@ def index():
         query = "SELECT * FROM insider_trades LIMIT 30"
         df = pd.read_sql(query, engine)
         
-        # 【💡 重點優化】：確保欄位名稱存在，並只篩選出你需要的 4 個核心維度
-        # 這裡會自動對應你的爬蟲欄位名稱，如果爬蟲存的欄位叫 'name' 或 'owner'，請根據真實狀況微調
-        available_cols = df.columns.tolist()
-        
-        # 尋找人名/組織可能對應的欄位名稱
-        insider_col = 'insider'
-        for col in ['insider', 'name', 'owner', 'insider_name']:
-            if col in available_cols:
-                insider_col = col
-                break
-                
-        # 篩選並統一重新命名欄位，餵給前端
+        # 建立一個乾淨、精簡的新 DataFrame 餵給前端
         df_clean = pd.DataFrame()
-        df_clean['ticker'] = df['ticker'] if 'ticker' in df.columns else df.iloc[:, 0]
-        df_clean['insider'] = df[insider_col] if insider_col in df.columns else "Unknown Entity"
-        df_clean['transaction'] = df['transaction'] if 'transaction' in df.columns else "Transaction"
-        df_clean['value'] = df['value'] if 'value' in df.columns else "0"
         
-        # 將 DataFrame 轉換為字典格式的 List，完美對齊 index.html 的迴圈
+        # 1. 股票代號 (OpenInsider 原始欄位名為 'Ticker')
+        if 'Ticker' in df.columns:
+            df_clean['ticker'] = df['Ticker'].astype(str).str.upper()
+        else:
+            df_clean['ticker'] = df.iloc[:, 3].astype(str).str.upper() # 保底取第四欄
+            
+        # 2. 人名或組織或企業 (OpenInsider 原始欄位名為 'Insider Name')
+        if 'Insider Name' in df.columns:
+            df_clean['insider'] = df['Insider Name'].astype(str)
+        elif 'Insider_Name' in df.columns:
+            df_clean['insider'] = df['Insider_Name'].astype(str)
+        else:
+            df_clean['insider'] = "Unknown Entity"
+
+        # 3. 買或賣 (OpenInsider 原始欄位名為 'Trade Type')
+        if 'Trade Type' in df.columns:
+            df_clean['transaction'] = df['Trade Type'].astype(str)
+        elif 'Trade_Type' in df.columns:
+            df_clean['transaction'] = df['Trade_Type'].astype(str)
+        else:
+            df_clean['transaction'] = "Transaction"
+
+        # 4. 金額 (OpenInsider 原始欄位名為 'Value')
+        if 'Value' in df.columns:
+            df_clean['value'] = df['Value'].astype(str)
+        else:
+            df_clean['value'] = "$0"
+
+        # 轉成前端需要的字典格式
         data_list = df_clean.to_dict(orient='records')
         
-        # 成功將對齊好的 data_list 傳給前端
         return render_template('index.html', data_list=data_list)
         
     except Exception as e:
-        return f"資料庫讀取失敗：{e}"
+        return f"資料庫讀取失敗，請確認爬蟲是否成功寫入：{e}"
 
 if __name__ == "__main__":
-    # 啟動本地伺服器
     app.run(debug=True)

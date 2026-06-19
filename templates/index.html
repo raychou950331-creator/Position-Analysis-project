@@ -127,4 +127,119 @@
             color: var(--klein-text);
             border: 1px solid #DDDDDD;
             font-weight: 400;
-            font-family
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            padding: 3px 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-status-bar {
+            background-color: #FFF9F8;
+            border: 1px solid #F0D3CE;
+            color: #A35C50;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="klein-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand-text text-decoration-none" href="#">KLEIN INTELLIGENCE</a>
+            <div class="d-flex align-items-center">
+                <a class="nav-link-custom active" href="#">Dashboard</a>
+                <a class="nav-link-custom" href="#">Market Data</a>
+                <a class="nav-link-custom" href="#">Analytics</a>
+                <a class="nav-link-custom" href="#">Publications</a>
+                <a class="nav-link-custom" href="#">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section text-center">
+            <h1 class="hero-title">Investing in the Future</h1>
+            <div class="hero-title-underline"></div>
+            <p class="hero-subtitle">US Equity Market Insider Trading Monitoring System</p>
+        </div>
+
+        <div class="info-status-bar text-center">
+            ✨ System Live Status: Awaiting fresh pipeline dataset sync. Active automated monitoring initialized via GitHub Actions.
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-12">
+                <h3 class="custom-section-title">Market Trend & Analytics</h3>
+                <div class="chart-container text-center">
+                    {% if graph_html %}
+                        {{ graph_html | safe }}
+                    {% else %}
+                        <div class="py-5 text-muted">
+                            <span class="d-block mb-2 fw-semibold">Data Visualization Pipeline Syncing</span>
+                            <span class="small opacity-75">No chart entity returned from Flask backend engine yet. Showing placeholder.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12 mt-5">
+                <h3 class="custom-section-title">Latest Insider Transactions</h3>
+                <div class="table-responsive">
+                    <table class="table table-klein">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Relationship</th>
+                                <th>Transaction Type</th>
+                                <th>Value</th>
+                                <th>Filing Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if data_list and data_list|length > 0 %}
+                                {% for row in data_list %}
+                                <tr>
+                                    <td><span class="ticker-badge">{{ row.ticker }}</span></td>
+                                    <td>{{ row.relationship }}</td>
+                                    <td>
+                                        {% if 'Buy' in row.transaction or 'Purchase' in row.transaction %}
+                                            <span style="color: #4E7026; font-weight: 400;">● {{ row.transaction }}</span>
+                                        {% else %}
+                                            <span style="color: #9E2A2B; font-weight: 400;">● {{ row.transaction }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold text-secondary">${{ row.value }}</td>
+                                    <td class="text-muted">{{ row.date }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td><span class="ticker-badge" style="border-style: dashed; color: #999;">TSLA</span></td>
+                                    <td class="text-muted">Director (Example Stream)</td>
+                                    <td><span style="color: #4E7026; opacity: 0.6;">● Purchase</span></td>
+                                    <td class="fw-bold text-muted" style="opacity: 0.6;">$2,450,000</td>
+                                    <td class="text-muted small">Awaiting First Sync</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="ticker-badge" style="border-style: dashed; color: #999;">MSFT</span></td>
+                                    <td class="text-muted">Chief Financial Officer (Example Stream)</td>
+                                    <td><span style="color: #9E2A2B; opacity: 0.6;">● Sale</span></td>
+                                    <td class="fw-bold text-muted" style="opacity: 0.6;">$1,120,000</td>
+                                    <td class="text-muted small">Awaiting First Sync</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

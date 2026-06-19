@@ -11,7 +11,7 @@
         :root {
             --klein-bg: #FFFFFF;           
             --klein-text: #222222;         
-            --klein-accent: #D29285;       /* Rose Gold Accent from image_65cd68.jpg */
+            --klein-accent: #D29285;       /* Rose Gold Accent from reference */
             --klein-navbar-link: #888888;  
         }
 
@@ -65,7 +65,10 @@
             width: 180px;
             height: 2px;
             background-color: var(--klein-accent);
-            margin: 0.5rem auto 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-left: auto;   /* Perfect Centering */
+            margin-right: auto;  /* Perfect Centering */
         }
         .hero-subtitle {
             color: var(--klein-navbar-link);
@@ -134,17 +137,6 @@
             padding: 3px 8px;
             letter-spacing: 0.5px;
         }
-
-        .info-status-bar {
-            background-color: #FFF9F8;
-            border: 1px solid #F0D3CE;
-            color: #A35C50;
-            font-size: 0.9rem;
-            border-radius: 6px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            font-weight: 400;
-        }
     </style>
 </head>
 <body>
@@ -169,10 +161,6 @@
             <p class="hero-subtitle">US Equity Market Insider Trading Monitoring System</p>
         </div>
 
-        <div class="info-status-bar text-center">
-            ✨ System Live Status: Awaiting fresh pipeline dataset sync. Active automated monitoring initialized via GitHub Actions.
-        </div>
-
         <div class="row g-5">
             <div class="col-lg-12">
                 <h3 class="custom-section-title">Market Trend & Analytics</h3>
@@ -182,7 +170,7 @@
                     {% else %}
                         <div class="py-5 text-muted">
                             <span class="d-block mb-2 fw-semibold">Data Visualization Pipeline Syncing</span>
-                            <span class="small opacity-75">No chart entity returned from Flask backend engine yet. Showing placeholder.</span>
+                            <span class="small opacity-75">Awaiting active data streaming transmission from database backend...</span>
                         </div>
                     {% endif %}
                 </div>
@@ -195,10 +183,9 @@
                         <thead>
                             <tr>
                                 <th>Ticker</th>
-                                <th>Relationship</th>
-                                <th>Transaction Type</th>
+                                <th>Insider Name / Entity</th>
+                                <th>Transaction</th>
                                 <th>Value</th>
-                                <th>Filing Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -206,7 +193,7 @@
                                 {% for row in data_list %}
                                 <tr>
                                     <td><span class="ticker-badge">{{ row.ticker }}</span></td>
-                                    <td>{{ row.relationship }}</td>
+                                    <td>{{ row.insider or row.name or row.owner }}</td>
                                     <td>
                                         {% if 'Buy' in row.transaction or 'Purchase' in row.transaction %}
                                             <span style="color: #4E7026; font-weight: 400;">● {{ row.transaction }}</span>
@@ -215,23 +202,20 @@
                                         {% endif %}
                                     </td>
                                     <td class="fw-bold text-secondary">${{ row.value }}</td>
-                                    <td class="text-muted">{{ row.date }}</td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
                                     <td><span class="ticker-badge" style="border-style: dashed; color: #999;">TSLA</span></td>
-                                    <td class="text-muted">Director (Example Stream)</td>
+                                    <td class="text-muted opacity-75">Elon Musk (Sample Entity)</td>
                                     <td><span style="color: #4E7026; opacity: 0.6;">● Purchase</span></td>
                                     <td class="fw-bold text-muted" style="opacity: 0.6;">$2,450,000</td>
-                                    <td class="text-muted small">Awaiting First Sync</td>
                                 </tr>
                                 <tr>
                                     <td><span class="ticker-badge" style="border-style: dashed; color: #999;">MSFT</span></td>
-                                    <td class="text-muted">Chief Financial Officer (Example Stream)</td>
+                                    <td class="text-muted opacity-75">Vanguard Group Inc (Sample Entity)</td>
                                     <td><span style="color: #9E2A2B; opacity: 0.6;">● Sale</span></td>
                                     <td class="fw-bold text-muted" style="opacity: 0.6;">$1,120,000</td>
-                                    <td class="text-muted small">Awaiting First Sync</td>
                                 </tr>
                             {% endif %}
                         </tbody>

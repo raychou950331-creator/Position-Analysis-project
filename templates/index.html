@@ -23,7 +23,6 @@
             padding-bottom: 5rem;
         }
 
-        /* 1. Elegant Header Navbar */
         .klein-navbar {
             padding: 1.5rem 0;
             border-bottom: 1px solid #EEEEEE;
@@ -41,13 +40,8 @@
             margin-left: 1.5rem;
             font-weight: 300;
             text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        .nav-link-custom:hover, .nav-link-custom.active {
-            color: var(--klein-accent);
         }
 
-        /* 2. Professional Hero Section */
         .hero-section {
             padding: 5.5rem 0 3.5rem;
         }
@@ -65,7 +59,7 @@
             width: 180px;
             height: 2px;
             background-color: var(--klein-accent);
-            margin: 0.5rem auto 1.5rem; /* 恢復你原本的 margin 排版設定，不強放置中 */
+            margin: 0.5rem auto 1.5rem; /* 保持你原本的排版，不限制死置中 */
         }
         .hero-subtitle {
             color: var(--klein-navbar-link);
@@ -74,17 +68,14 @@
             letter-spacing: 0.5px;
         }
 
-        /* 3. Section Styling */
         .custom-section-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.4rem;
             color: var(--klein-text);
             margin-bottom: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.3px;
         }
 
-        /* 4. High-End Minimalist Table */
         .table-responsive {
             border-radius: 8px;
             overflow: hidden;
@@ -97,21 +88,21 @@
             font-weight: 300;
         }
         .table-klein th {
-            font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: #777777;
             background-color: #FAFAFA;
             border-bottom: 1px solid #EEEEEE;
-            padding: 1.2rem;
+            padding: 1.2rem 1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            font-size: 0.72rem;
+            white-space: nowrap;
         }
         .table-klein td {
-            padding: 1.2rem;
+            padding: 1.2rem 1rem;
             border-color: #EEEEEE;
             vertical-align: middle;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
 
         .ticker-badge {
@@ -119,12 +110,10 @@
             color: var(--klein-text);
             border: 1px solid #DDDDDD;
             font-weight: 400;
-            font-family: 'Inter', sans-serif;
             text-transform: uppercase;
             font-size: 0.8rem;
             border-radius: 4px;
             padding: 3px 8px;
-            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -134,7 +123,7 @@
         <div class="container d-flex justify-content-between align-items-center">
             <a class="navbar-brand-text text-decoration-none" href="#">KLEIN INTELLIGENCE</a>
             <div class="d-flex align-items-center">
-                <a class="nav-link-custom active" href="#">Dashboard</a>
+                <a class="nav-link-custom text-dark fw-bold" href="#">Dashboard</a>
                 <a class="nav-link-custom" href="#">Market Data</a>
                 <a class="nav-link-custom" href="#">Analytics</a>
             </div>
@@ -155,9 +144,13 @@
                     <table class="table table-klein">
                         <thead>
                             <tr>
+                                <th>Trade Date</th>
                                 <th>Ticker</th>
-                                <th>Insider Name / Entity</th>
+                                <th>Insider Name</th>
                                 <th>Transaction</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>ΔOwn</th>
                                 <th>Value</th>
                             </tr>
                         </thead>
@@ -165,8 +158,9 @@
                             {% if data_list and data_list|length > 0 %}
                                 {% for row in data_list %}
                                 <tr>
+                                    <td class="text-muted">{{ row.trade_date }}</td>
                                     <td><span class="ticker-badge">{{ row.ticker }}</span></td>
-                                    <td>{{ row.insider }}</td>
+                                    <td class="fw-semibold">{{ row.insider }}</td>
                                     <td>
                                         {% if 'Buy' in row.transaction or 'Purchase' in row.transaction %}
                                             <span style="color: #4E7026; font-weight: 400;">● {{ row.transaction }}</span>
@@ -174,12 +168,21 @@
                                             <span style="color: #9E2A2B; font-weight: 400;">● {{ row.transaction }}</span>
                                         {% endif %}
                                     </td>
+                                    <td>{{ row.price }}</td>
+                                    <td>{{ row.qty }}</td>
+                                    <td>
+                                        {% if '-' in row.delta_own %}
+                                            <span class="text-danger">{{ row.delta_own }}</span>
+                                        {% else %}
+                                            <span class="text-success">{{ row.delta_own }}</span>
+                                        {% endif %}
+                                    </td>
                                     <td class="fw-bold text-secondary">{{ row.value }}</td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">Awaiting database stream data sync...</td>
+                                    <td colspan="8" class="text-center py-4 text-muted">Awaiting database stream data sync...</td>
                                 </tr>
                             {% endif %}
                         </tbody>

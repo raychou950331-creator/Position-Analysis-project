@@ -10,6 +10,7 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "").replace("postgres://", "postgresql://", 1)
 
 app = Flask(__name__)
+
 engine = create_engine(DATABASE_URL)
 
 

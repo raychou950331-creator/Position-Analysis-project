@@ -212,11 +212,6 @@ def analyze_ticker(ticker, insider_action):
 # ======================================================
 
 def analyze_insider_trades(trades):
-    """
-    trades: list of dict，每個 dict 至少有 'Ticker' 和 'Trade Type'
-    回傳 list of dict（分析結果）
-    """
-    # 去重，同一支股票只分析一次，取最新一筆的方向
     seen = {}
     for t in trades:
         ticker = t.get('Ticker', '')
@@ -227,13 +222,14 @@ def analyze_insider_trades(trades):
         if ticker not in seen:
             seen[ticker] = action
 
+    limited = list(seen.items())[:5]
+
     results = []
-    for ticker, action in seen.items():
+    for ticker, action in limited:
         result = analyze_ticker(ticker, action)
         if result:
             results.append(result)
 
-    # 排序：強烈買進 > 買進 > 觀望 > 賣出 > 強烈賣出
     order = {'strong_buy': 0, 'buy': 1, 'neutral': 2, 'sell': 3, 'strong_sell': 4}
     results.sort(key=lambda x: order.get(x['final'], 99))
 

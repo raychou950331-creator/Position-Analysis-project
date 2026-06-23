@@ -58,7 +58,23 @@ def get_signals():
     except Exception as e:
         print(f"[ERROR] Signals failed: {e}")
         return jsonify([])
-
+        
+@app.route("/analytics")
+def analytics():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT "Ticker", "Trade Type"
+                FROM insider_trades
+                ORDER BY "Filing Date" DESC
+                LIMIT 100
+            """))
+            trades = [dict(row._mapping) for row in result]
+        signals = analyze_insider_trades(trades)
+    except Exception as e:
+        print(f"[ERROR] Analytics failed: {e}")
+        signals = []
+    return render_template("analytics.html", signals=signals)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -111,7 +111,6 @@ def combine_signal(tech_signal, ma_status, insider_action, rsi, price):
     tech_signal:    dict 或 None
     ma_status:      'bull' / 'bear' / 'mixed'
     """
-
     # 均線混亂 → 直接觀望
     if ma_status == 'mixed':
         return {
@@ -133,7 +132,6 @@ def combine_signal(tech_signal, ma_status, insider_action, rsi, price):
             final  = 'strong_sell' if rsi > 70 else 'sell'
             reason = f"技術面空頭＋內部人賣出一致（{tech_signal['reason']}）"
         else:
-            # 有技術訊號但方向分歧
             return {
                 'final':  'neutral',
                 'label':  '觀望',
@@ -149,14 +147,31 @@ def combine_signal(tech_signal, ma_status, insider_action, rsi, price):
             'price':  price,
         }
 
-    # 沒有技術訊號 → 觀望
-    return {
-        'final':  'neutral',
-        'label':  '觀望',
-        'reason': '技術面無明確訊號，保守觀望',
-        'rsi':    rsi,
-        'price':  price,
-    }
+    # 沒有明確技術訊號，但均線方向明確
+    if ma_status == 'bull' and insider_action == 'buy':
+        return {
+            'final':  'buy',
+            'label':  '買進',
+            'reason': '均線多頭排列，與內部人買進方向一致',
+            'rsi':    rsi,
+            'price':  price,
+        }
+    elif ma_status == 'bear' and insider_action == 'sell':
+        return {
+            'final':  'sell',
+            'label':  '賣出',
+            'reason': '均線空頭排列，與內部人賣出方向一致',
+            'rsi':    rsi,
+            'price':  price,
+        }
+    else:
+        return {
+            'final':  'neutral',
+            'label':  '觀望',
+            'reason': '技術面無明確訊號，保守觀望',
+            'rsi':    rsi,
+            'price':  price,
+        }
 
 # ======================================================
 # 7. 分析單支股票

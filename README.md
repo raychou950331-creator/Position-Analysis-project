@@ -1,9 +1,9 @@
 # 期末專題：[Position Analysis project]
 
 ## 組員名單
-* [周睿元]
+* 周睿元
 
-## 期末專題：美股內部人交易監測系統 (MVP)
+## 期末專題：美股內部交易監測系統 (MVP)
 
 ### 專案啟動方式
 1. 建立虛擬環境：`python -m venv venv`

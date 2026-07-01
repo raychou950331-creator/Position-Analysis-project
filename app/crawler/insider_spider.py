@@ -81,6 +81,7 @@ def save_to_postgres(df):
             conn_url = conn_url.replace("postgres://", "postgresql://", 1)
 
         engine = create_engine(conn_url)
+        print("[INFO] Columns:", df.columns.tolist())
 
         print(f"[INFO] Writing to database...")
         # 寫入資料庫，表名設為 insider_trades

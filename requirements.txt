@@ -7,3 +7,4 @@ gunicorn
 requests
 lxml
 yfinance
+playwright

@@ -53,7 +53,7 @@ def fetch_insider_data():
             
             # --- 清理欄位名稱 ---
             # 移除空格與排序箭頭字元
-            df.columns = [str(c).replace('▲', '').replace('▼', '').strip() for c in df.columns]
+            df.columns = [str(c).replace('▲', '').replace('▼', '').replace('\xa0', ' ').strip() for c in df.columns]
             
             browser.close()
             return df

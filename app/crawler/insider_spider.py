@@ -5,6 +5,7 @@ from io import StringIO
 from playwright.sync_api import sync_playwright
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+import yfinance as yf
 
 # 1. 載入環境變數
 load_dotenv()
@@ -63,6 +64,25 @@ def fetch_insider_data():
             if 'browser' in locals():
                 browser.close()
             return None
+            
+def filter_by_market_cap(df, min_cap=2_000_000_000):
+    if df is None or df.empty:
+        return df
+    
+    valid_tickers = []
+    for ticker in df['Ticker'].unique():
+        try:
+            info = yf.Ticker(ticker).info
+            market_cap = info.get('marketCap', 0) or 0
+            if market_cap >= min_cap:
+                valid_tickers.append(ticker)
+                print(f"[INFO] {ticker} 市值 ${market_cap:,.0f} ✓")
+            else:
+                print(f"[SKIP] {ticker} 市值 ${market_cap:,.0f} 低於門檻，跳過")
+        except Exception as e:
+            print(f"[WARN] {ticker} 市值查詢失敗，跳過: {e}")
+    
+    return df[df['Ticker'].isin(valid_tickers)]
 
 def save_to_postgres(df):
     """將資料存入 PostgreSQL"""
@@ -95,8 +115,13 @@ if __name__ == "__main__":
     raw_data = fetch_insider_data()
     
     if raw_data is not None:
+        print("[INFO] Columns:", raw_data.columns.tolist())
         
-        # 存檔
-        save_to_postgres(raw_data)
+        # 市值篩選
+        print("[INFO] Filtering by market cap > $2B...")
+        filtered_data = filter_by_market_cap(raw_data)
+        print(f"[INFO] 篩選後剩 {len(filtered_data)} 筆資料")
+        
+        save_to_postgres(filtered_data)
     else:
         print("\n[ERROR] Process failed, please check network connection.")

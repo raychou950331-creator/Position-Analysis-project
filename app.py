@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from flask import Flask, render_template
+from flask import request
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from flask import jsonify

@@ -9,6 +9,8 @@ from strategy import analyze_insider_trades
 from flask import jsonify
 import yfinance as yf
 from datetime import datetime, timedelta
+import time
+
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "").replace("postgres://", "postgresql://", 1)
@@ -17,6 +19,8 @@ app = Flask(__name__)
 
 engine = create_engine(DATABASE_URL)
 
+_market_cache = {'data': None, 'timestamp': 0}
+CACHE_TTL = 900
 
 @app.route("/")
 def index():
@@ -86,8 +90,30 @@ def market_data():
 
 @app.route("/api/market-data")
 def get_market_data():
+    global _market_cache
+
+    symbols_param = request.args.get('symbols', 'QQQ')
+
+    if _market_cache['data'] and time.time() - _market_cache['timestamp'] < CACHE_TTL:
+        cached = dict(_market_cache['data'])
+        try:
+            symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()][:4]
+            chart_data = {}
+            for symbol in symbols:
+                hist = yf.Ticker(symbol).history(period='1mo', interval='1d')
+                if hist.empty:
+                    continue
+                base = float(hist['Close'].iloc[0])
+                chart_data[symbol] = {
+                    'dates': [d.strftime('%m/%d') for d in hist.index],
+                    'returns': [round((float(c) - base) / base * 100, 2) for c in hist['Close']]
+                }
+            cached['chart'] = chart_data
+        except:
+            pass
+        return jsonify(cached)
+
     try:
-        # 大盤指數
         indices = {
             'S&P 500': '^GSPC',
             'Nasdaq': '^IXIC',
@@ -97,39 +123,48 @@ def get_market_data():
 
         index_data = []
         for name, symbol in indices.items():
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            hist = ticker.history(period='2d')
-            if len(hist) >= 2:
-                prev_close = hist['Close'].iloc[-2]
-                curr_close = hist['Close'].iloc[-1]
-                change_pct = ((curr_close - prev_close) / prev_close) * 100
-            else:
-                curr_close = info.get('regularMarketPrice', 0)
-                change_pct = info.get('regularMarketChangePercent', 0)
+            try:
+                ticker = yf.Ticker(symbol)
+                hist = ticker.history(period='2d')
+                if len(hist) >= 2:
+                    prev_close = float(hist['Close'].iloc[-2])
+                    curr_close = float(hist['Close'].iloc[-1])
+                    change_pct = (curr_close - prev_close) / prev_close * 100
+                else:
+                    curr_close = 0
+                    change_pct = 0
+                index_data.append({
+                    'name': name,
+                    'price': round(curr_close, 2),
+                    'change_pct': round(change_pct, 2)
+                })
+            except:
+                index_data.append({'name': name, 'price': 0, 'change_pct': 0})
 
-            index_data.append({
-                'name': name,
-                'price': round(float(curr_close), 2),
-                'change_pct': round(float(change_pct), 2)
-            })
-
-        # 走勢圖資料（預設 QQQ + 可自訂）
-        symbols = request.args.get('symbols', 'QQQ').split(',')
-        symbols = [s.strip().upper() for s in symbols if s.strip()][:4]
-
+        symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()][:4]
         chart_data = {}
         for symbol in symbols:
-            hist = yf.Ticker(symbol).history(period='1mo', interval='1d')
-            if hist.empty:
-                continue
-            base = float(hist['Close'].iloc[0])
-            chart_data[symbol] = {
-                'dates': [d.strftime('%m/%d') for d in hist.index],
-                'returns': [round((float(c) - base) / base * 100, 2) for c in hist['Close']]
-            }
+            try:
+                hist = yf.Ticker(symbol).history(period='1mo', interval='1d')
+                if hist.empty:
+                    continue
+                base = float(hist['Close'].iloc[0])
+                chart_data[symbol] = {
+                    'dates': [d.strftime('%m/%d') for d in hist.index],
+                    'returns': [round((float(c) - base) / base * 100, 2) for c in hist['Close']]
+                }
+            except:
+                pass
 
-        return jsonify({'indices': index_data, 'chart': chart_data})
+        result = {'indices': index_data, 'chart': chart_data}
+
+        # 只快取大盤指數，走勢圖不快取
+        _market_cache = {
+            'data': {'indices': index_data, 'chart': chart_data},
+            'timestamp': time.time()
+        }
+
+        return jsonify(result)
 
     except Exception as e:
         print(f"[ERROR] Market data failed: {e}")

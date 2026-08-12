@@ -21,7 +21,7 @@ def fetch_insider_data():
         )
         page = context.new_page()
         
-        url = "http://openinsider.com/latest-insider-sales"
+        url = "http://openinsider.com/latest-insider-trading"
         print(f"[INFO] Connecting to: {url}")
         
         try:

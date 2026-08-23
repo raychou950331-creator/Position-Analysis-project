@@ -85,14 +85,25 @@ def filter_by_market_cap(df, min_cap=2_000_000_000):
     return df[df['Ticker'].isin(valid_tickers)]
     
 def filter_pure_trades(df):
-    """只保留純粹的股票市場買賣，排除選擇權履約、稅務處分等衍生性交易"""
+    """排除 Value 或 Price 為 0 的資料（通常是選擇權履約等非市場交易）"""
     if df is None or df.empty:
         return df
 
     before = len(df)
-    df = df[df['Trade Type'].isin(['S - Sale', 'P - Purchase'])]
+
+    def to_number(x):
+        try:
+            return float(str(x).replace('$', '').replace(',', '').replace('%', '').strip())
+        except:
+            return 0
+
+    value_num = df['Value'].apply(to_number)
+    price_num = df['Price'].apply(to_number)
+
+    df = df[(value_num != 0) & (price_num != 0)]
+
     after = len(df)
-    print(f"[INFO] 過濾衍生性交易：{before} → {after} 筆")
+    print(f"[INFO] 過濾 Value/Price 為 0 的資料：{before} → {after} 筆")
     return df
 
 def save_to_postgres(df):

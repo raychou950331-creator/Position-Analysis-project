@@ -83,6 +83,17 @@ def filter_by_market_cap(df, min_cap=2_000_000_000):
             print(f"[WARN] {ticker} 市值查詢失敗，跳過: {e}")
     
     return df[df['Ticker'].isin(valid_tickers)]
+    
+def filter_pure_trades(df):
+    """只保留純粹的股票市場買賣，排除選擇權履約、稅務處分等衍生性交易"""
+    if df is None or df.empty:
+        return df
+
+    before = len(df)
+    df = df[df['Trade Type'].isin(['S - Sale', 'P - Purchase'])]
+    after = len(df)
+    print(f"[INFO] 過濾衍生性交易：{before} → {after} 筆")
+    return df
 
 def save_to_postgres(df):
     """將資料存入 PostgreSQL"""
@@ -121,6 +132,8 @@ if __name__ == "__main__":
         print("[INFO] Filtering by market cap > $2B...")
         filtered_data = filter_by_market_cap(raw_data)
         print(f"[INFO] 篩選後剩 {len(filtered_data)} 筆資料")
+        print("[INFO] Filtering out derivative transactions...")
+        filtered_data = filter_pure_trades(filtered_data)
         
         save_to_postgres(filtered_data)
     else:

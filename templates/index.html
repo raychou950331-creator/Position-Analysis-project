@@ -193,6 +193,7 @@
 
   <section class="hero">
     <h1 class="hero-title">Investing in<br>the <em>Future.</em></h1>
+    <p style="font-size:12px;color:var(--muted);margin-top:16px;">最後更新：{{ last_updated }}</p>
   </section>
 
   <div class="stats-bar">
@@ -228,6 +229,9 @@
         <button class="filter-btn active" onclick="filterData('all', this)">All</button>
         <button class="filter-btn" onclick="filterData('buy', this)">Purchase</button>
         <button class="filter-btn" onclick="filterData('sell', this)">Sale</button>
+        <input type="text" id="searchInput" placeholder="搜尋 Ticker 或姓名..." 
+               style="margin-left:auto;padding:5px 12px;font-size:12px;border:1px solid var(--border);border-radius:2px;width:200px;"
+               oninput="searchData(this.value)">
       </div>
       <table id="txTable">
         <thead>
@@ -250,6 +254,23 @@
   </footer>
 
   <script>
+    let currentFilter = 'all';
+    function searchData(keyword) {
+      keyword = keyword.toLowerCase();
+      let filtered = rawData;
+      if (currentFilter === 'buy') filtered = filtered.filter(r => isBuy(r['Trade Type']));
+      if (currentFilter === 'sell') filtered = filtered.filter(r => !isBuy(r['Trade Type']));
+  
+      if (keyword) {
+        filtered = filtered.filter(r => 
+          (r['Ticker'] || '').toLowerCase().includes(keyword) ||
+          (r['Insider Name'] || '').toLowerCase().includes(keyword)
+        );
+      }
+      render(filtered);
+    }
+
+
     const rawData = {{ trades | tojson }};
 
     function isBuy(tradeType) {
@@ -263,8 +284,7 @@
         const buy = isBuy(row['Trade Type']);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><span class="entity">${row['Trade Date'] || '—'}</span></td>
-          <td><span class="ticker">${row['Ticker'] || '—'}</span></td>
+          <td><a href="/analytics?ticker=${row['Ticker']}" style="text-decoration:none;"><span class="ticker">${row['Ticker'] || '—'}</span></a></td>
           <td><span class="entity">${row['Insider Name'] || '—'}</span></td>
           <td><span class="entity">${row['Title'] || '—'}</span></td>
           <td>
@@ -285,11 +305,10 @@
     }
 
     function filterData(type, btn) {
+      currentFilter = type;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      if (type === 'all')  render(rawData);
-      if (type === 'buy')  render(rawData.filter(r => isBuy(r['Trade Type'])));
-      if (type === 'sell') render(rawData.filter(r => !isBuy(r['Trade Type'])));
+      searchData(document.getElementById('searchInput').value);
     }
 
     const buys    = rawData.filter(r => isBuy(r['Trade Type']));

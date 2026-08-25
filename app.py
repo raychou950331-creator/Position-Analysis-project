@@ -43,11 +43,14 @@ def index():
                 LIMIT 50
             """))
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
+            last_updated = df['Filing Date'].iloc[0] if not df.empty else '未知'
+            
     except Exception as e:
         print(f"[ERROR] Database read failed: {e}")
         df = pd.DataFrame()
+        last_updated = '未知'
 
-    return render_template("index.html", trades=df.to_dict(orient="records"))
+    return render_template("index.html", trades=df.to_dict(orient="records"), last_updated=last_updated)
 
 
 @app.route("/api/signals")

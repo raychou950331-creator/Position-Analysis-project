@@ -72,15 +72,21 @@ def get_signals():
         
 @app.route("/analytics")
 def analytics():
+    ticker_filter = request.args.get('ticker', '').upper()
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("""
+            query = """
                 SELECT "Ticker", "Trade Type"
                 FROM insider_trades
                 ORDER BY "Filing Date" DESC
                 LIMIT 100
-            """))
+            """
+            result = conn.execute(text(query))
             trades = [dict(row._mapping) for row in result]
+
+        if ticker_filter:
+            trades = [t for t in trades if t['Ticker'] == ticker_filter]
+
         signals = analyze_insider_trades(trades)
     except Exception as e:
         print(f"[ERROR] Analytics failed: {e}")

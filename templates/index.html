@@ -284,6 +284,7 @@
         const buy = isBuy(row['Trade Type']);
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td><span class="entity">${row['Trade Date'] || '—'}</span></td>
           <td><a href="/analytics?ticker=${row['Ticker']}" style="text-decoration:none;"><span class="ticker">${row['Ticker'] || '—'}</span></a></td>
           <td><span class="entity">${row['Insider Name'] || '—'}</span></td>
           <td><span class="entity">${row['Title'] || '—'}</span></td>

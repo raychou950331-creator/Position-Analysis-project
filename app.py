@@ -139,16 +139,15 @@ def get_market_data():
                     prev_close = float(hist['Close'].iloc[-2])
                     curr_close = float(hist['Close'].iloc[-1])
                     change_pct = (curr_close - prev_close) / prev_close * 100
+                    index_data.append({
+                        'name': name,
+                        'price': round(curr_close, 2),
+                        'change_pct': round(change_pct, 2)
+                    })
                 else:
-                    curr_close = 0
-                    change_pct = 0
-                index_data.append({
-                    'name': name,
-                    'price': round(curr_close, 2),
-                    'change_pct': round(change_pct, 2)
-                })
-            except:
-                index_data.append({'name': name, 'price': 0, 'change_pct': 0})
+                    print(f"[WARN] {name} ({symbol}) 資料不足，跳過")
+            except Exception as e:
+                print(f"[WARN] {name} ({symbol}) 抓取失敗，跳過: {e}")
 
         symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()][:4]
         chart_data = {}
